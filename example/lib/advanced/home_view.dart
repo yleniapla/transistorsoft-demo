@@ -61,7 +61,13 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
   }
 
   Future<Null> initPlatformState() async {
-    BackgroundFetch.configure(BackgroundFetchConfig(minimumFetchInterval: 15, stopOnTerminate: false, enableHeadless: true), () async {
+    // Configure BackgroundFetch (not required by BackgroundGeolocation).
+    BackgroundFetch.configure(BackgroundFetchConfig(
+      minimumFetchInterval: 15,
+      startOnBoot: true,
+      stopOnTerminate: false,
+      enableHeadless: true
+    ), () async {
       print('[BackgroundFetch] received event');
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -75,7 +81,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
       BackgroundFetch.finish();
     });
 
-    // 1.  Listen to events (See docs for all 12 available events).
+    // 1.  Listen to events (See docs for all 13 available events).
     bg.BackgroundGeolocation.onLocation(_onLocation, _onLocationError);
     bg.BackgroundGeolocation.onMotionChange(_onMotionChange);
     bg.BackgroundGeolocation.onActivityChange(_onActivityChange);
@@ -88,6 +94,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
     bg.BackgroundGeolocation.onSchedule(_onSchedule);
     bg.BackgroundGeolocation.onPowerSaveChange(_onPowerSaveChange);
     bg.BackgroundGeolocation.onEnabledChange(_onEnabledChange);
+    bg.BackgroundGeolocation.onNotificationAction(_onNotificationAction);
 
     // Fetch username and devivceParams for posting to tracker.transistorsoft.com
     final SharedPreferences prefs = await _prefs;
@@ -97,20 +104,20 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
 
     // 2.  Configure the plugin
     bg.BackgroundGeolocation.ready(bg.Config(
-        reset: false,
-        heartbeatInterval: 60,
+        debug: true,
+        logLevel: bg.Config.LOG_LEVEL_VERBOSE,
         desiredAccuracy: bg.Config.DESIRED_ACCURACY_NAVIGATION,
         distanceFilter: 10.0,
         stopOnTerminate: false,
         startOnBoot: true,
-        foregroundService: true,
         enableHeadless: true,
         stopTimeout: 1,
-        debug: true,
         autoSync: true,
-        url: 'http://tracker.transistorsoft.com/locations/$_username',
+        url: 'https://transistorsoft-demo-app.herokuapp.com/$_username',
         params: deviceParams,
-        logLevel: bg.Config.LOG_LEVEL_VERBOSE
+        heartbeatInterval: 60,
+        foregroundService: true,
+        reset: false
     )).then((bg.State state) {
       print('[ready] ${state.toMap()}');
       if (state.schedule.isNotEmpty) {
@@ -175,6 +182,9 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
     }).catchError((e) {
       print('[changePace] ERROR: ' + e.code.toString());
     });
+
+    if (!_isMoving) {
+    }
   }
 
   // Manually fetch the current position.
@@ -271,7 +281,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
 
     bg.BackgroundGeolocation.startBackgroundTask().then((int taskId) {
       // Execute an HTTP request to test an async operation completes.
-      String url = "http://tracker.transistorsoft.com/devices?company_token=$_username";
+      String url = "https://transistorsoft-demo-app.herokuapp.com/devices?company_token=$_username";
       http.read(url).then((String result) {
         print("[http test] success: $result");
         bg.BackgroundGeolocation.playSound("POP");
@@ -309,6 +319,17 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
       events.clear();
       events.insert(0, Event(bg.Event.ENABLEDCHANGE, enabled, '[EnabledChangeEvent enabled: $enabled]'));
     });
+  }
+
+  void _onNotificationAction(String action) {
+    print('[onNotificationAction] $action');
+    switch(action) {
+      case 'notificationButtonFoo':
+        bg.BackgroundGeolocation.changePace(false);
+        break;
+      case 'notificationButtonBar':
+        break;
+    }
   }
 
   void _onPowerSaveChange(bool enabled) {

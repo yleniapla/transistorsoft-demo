@@ -120,7 +120,7 @@ class Test {
         enableTimestampMeta: true,
         stopTimeout: 1,
         schedule: [],
-        url: "http://tracker.transistorsoft.com/locations/$username",
+        url: "https://transistorsoft-demo-app.herokuapp.com/$username",
         params: deviceParams,
         geofenceModeHighAccuracy: true,
         stopOnTerminate: false,

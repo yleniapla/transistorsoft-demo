@@ -14,7 +14,7 @@ import 'hello_world/app.dart';
 import 'advanced/app.dart';
 import 'package:flutter_background_geolocation_example/advanced/util/dialog.dart' as util;
 
-const TRACKER_HOST = 'http://tracker.transistorsoft.com/locations/';
+const TRACKER_HOST = 'https://transistorsoft-demo-app.herokuapp.com/locations/';
 
 class HomeApp extends StatefulWidget {
   @override
@@ -86,7 +86,7 @@ class _HomeViewState extends State<_HomeView> {
               child: Column(
                   children: <Widget>[
                     new Text('Please enter a unique identifier so that BackgroundGeolocation can post locations to the demo server:'),
-                    new Text('tracker.transistorsoft.com'),
+                    new Text('https://transistorsoft-demo-app.herokuapp.com/'),
                     new Row(
                       children: <Widget>[
                         Expanded(
@@ -177,7 +177,7 @@ class _HomeViewState extends State<_HomeView> {
                                 child: Text("These apps will post locations to Transistor Software's demo server.  You can view your tracking in the browser by visiting:")
                             ),
                             Center(
-                                child: Text("tracker.transistorsoft.com/$_username", style: TextStyle(fontWeight: FontWeight.bold))
+                                child: Text("https://transistorsoft-demo-app.herokuapp.com/$_username", style: TextStyle(fontWeight: FontWeight.bold))
                             ),
                             Container(
                                 color: Colors.white,
@@ -226,7 +226,8 @@ class _HomeViewState extends State<_HomeView> {
     Map<String, dynamic> deviceParams = await bg.Config.deviceParams;
     bg.BackgroundGeolocation.setConfig(bg.Config(
       url: TRACKER_HOST + _username,
-      params: deviceParams
+      params: deviceParams,
+      debug: true
     ));
 
     final SharedPreferences prefs = await _prefs;
