@@ -275,7 +275,7 @@ class MapViewState extends State<MapView> with AutomaticKeepAliveClientMixin<Map
     }));
   }
 
-  void _onPositionChanged(MapPosition pos, bool foo) {
+  void _onPositionChanged(MapPosition pos, bool foo, bool bar) {
     num scale = _mapOptions.crs.scale(_mapController.zoom);
   }
 
